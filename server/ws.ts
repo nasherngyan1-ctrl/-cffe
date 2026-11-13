@@ -11,7 +11,8 @@ export interface PosWsEvent {
     | 'inventory:updated'
     | 'table:updated'
     | 'menu:updated'
-    | 'settings:updated';
+    | 'settings:updated'
+    | 'demo:reset';
   payload: unknown;
   timestamp: string;
 }

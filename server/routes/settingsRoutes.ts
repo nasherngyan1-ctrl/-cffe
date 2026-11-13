@@ -8,6 +8,7 @@ import {
   listLocalBackups,
   restoreLocalBackup,
 } from '../db.ts';
+import { bootstrapLocalDatabase } from '../scripts/setup-admin.ts';
 import { logAudit, requireAuth, requirePermission, requireRole } from '../auth.ts';
 import { broadcastEvent, getConnectedDevices } from '../ws.ts';
 
@@ -101,6 +102,36 @@ router.post('/backups/restore', requireAuth, requireRole('owner'), requirePermis
 router.get('/audit-logs', requireAuth, requireRole('owner'), (_req, res) => {
   const logs = db.prepare('SELECT * FROM audit_logs ORDER BY created_at DESC, id DESC LIMIT 150').all();
   return res.json({ logs });
+});
+
+router.post('/reset-demo', requireAuth, (req, res) => {
+  try {
+    db.transaction(() => {
+      db.exec(`
+        DELETE FROM order_items;
+        DELETE FROM orders;
+        DELETE FROM product_recipes;
+        DELETE FROM product_variations;
+        DELETE FROM products;
+        DELETE FROM categories;
+        DELETE FROM inventory_items;
+        DELETE FROM suppliers;
+        DELETE FROM addons;
+        DELETE FROM cafe_tables;
+        DELETE FROM expenses;
+        DELETE FROM audit_logs;
+        DELETE FROM sessions;
+      `);
+    })();
+
+    bootstrapLocalDatabase({ logPrefix: '[Reset Demo]' });
+    logAudit(req.user || null, 'reset_demo_data', 'database', 'all', 'Reset all demo data to pristine state', req.ip || '');
+    broadcastEvent('demo:reset', { resetAt: new Date().toISOString() });
+    return res.json({ ok: true, message: 'Demo data successfully reset' });
+  } catch (err) {
+    console.error('[Reset Demo] Error:', err);
+    return res.status(500).json({ error: (err as Error).message });
+  }
 });
 
 export default router;

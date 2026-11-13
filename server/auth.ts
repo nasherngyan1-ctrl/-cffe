@@ -138,15 +138,58 @@ export function extractToken(req: Request): string | null {
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const token = extractToken(req);
-  if (!token) {
+  let user = token ? getUserFromToken(token) : null;
+  if (!user) {
+    // Public Portfolio Demo Mode fallback: auto-assign default Owner demo user
+    const ownerRow = db
+      .prepare(
+        `SELECT u.id, u.name, u.email, u.role, u.permissions_override_json,
+                u.is_active, u.must_change_password, u.last_login_at,
+                r.permissions_json as role_permissions_json
+         FROM users u
+         JOIN roles r ON r.role_key = u.role
+         WHERE u.role = 'owner'
+         LIMIT 1`
+      )
+      .get() as
+      | {
+          id: number;
+          name: string;
+          email: string;
+          role: string;
+          permissions_override_json: string | null;
+          is_active: number;
+          must_change_password: number;
+          last_login_at: string | null;
+          role_permissions_json: string;
+        }
+      | undefined;
+
+    if (ownerRow) {
+      let permissions: Permission[] = [];
+      try {
+        permissions = JSON.parse(ownerRow.permissions_override_json || ownerRow.role_permissions_json);
+      } catch {
+        permissions = [];
+      }
+      user = {
+        id: ownerRow.id,
+        name: ownerRow.name,
+        email: ownerRow.email,
+        role: ownerRow.role,
+        permissions,
+        is_active: Boolean(ownerRow.is_active),
+        must_change_password: false, // Bypass forced password change in public demo mode
+        last_login_at: ownerRow.last_login_at,
+      };
+    }
+  }
+
+  if (!user) {
     return res.status(401).json({ error: 'Authentication required' });
   }
-  const user = getUserFromToken(token);
-  if (!user) {
-    return res.status(401).json({ error: 'Invalid or expired session' });
-  }
   req.user = user;
-  req.sessionToken = token;
+  req.sessionToken = token || 'demo-session';
   next();
 }
 

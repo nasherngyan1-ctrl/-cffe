@@ -61,6 +61,7 @@ export default function App() {
   const [wsConnected, setWsConnected] = useState(false);
   const [pendingSyncCount, setPendingSyncCount] = useState(0);
   const [syncing, setSyncing] = useState(false);
+  const [resettingDemo, setResettingDemo] = useState(false);
 
   const { serverReachable, isOffline } = useOnlineStatus();
   const t = translations[lang];
@@ -123,7 +124,19 @@ export default function App() {
         if (token) posWsClient.connect(token);
         await loadSettings();
       } catch {
-        setUser(null);
+        const fallbackUser: User = {
+          id: 1,
+          name: 'BASLUNE Owner',
+          email: 'owner@baslune.local',
+          role: 'owner',
+          permissions: [],
+          is_active: true,
+          must_change_password: false,
+          last_login_at: null,
+        };
+        setUser(fallbackUser);
+        setActiveTab('dashboard');
+        await loadSettings();
       } finally {
         setAuthChecking(false);
       }
@@ -171,6 +184,20 @@ export default function App() {
   const handleConsumePreselectedTable = useCallback(() => {
     setPreselectedTableId(null);
   }, []);
+
+  const handleResetDemo = async () => {
+    if (!window.confirm(t.resetDemoConfirm)) return;
+    setResettingDemo(true);
+    try {
+      await apiRequest('/api/settings/reset-demo', { method: 'POST' });
+      alert(t.demoResetSuccess);
+      window.location.reload();
+    } catch (err) {
+      alert((err as Error).message);
+    } finally {
+      setResettingDemo(false);
+    }
+  };
 
   if (authChecking) {
     return (
@@ -241,6 +268,21 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0">
+            <div className="flex items-center gap-1.5 bg-[#A7B89A]/15 border border-[#A7B89A]/40 text-[#A7B89A] px-2.5 py-1 rounded-lg text-xs font-bold tracking-wide">
+              <span className="w-2 h-2 rounded-full bg-[#A7B89A] animate-pulse"></span>
+              <span>{t.demoModeBadge}</span>
+            </div>
+
+            <button
+              type="button"
+              disabled={resettingDemo}
+              onClick={handleResetDemo}
+              className="flex items-center gap-1 rounded-lg border border-amber-400/40 bg-amber-950/40 px-2.5 py-1 text-xs font-semibold text-amber-200 hover:bg-amber-900/40 cursor-pointer"
+              title={t.resetDemoData}
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${resettingDemo ? 'animate-spin' : ''}`} />
+              <span className="hidden md:inline">{t.resetDemoData}</span>
+            </button>
             {pendingSyncCount > 0 && (
               <button
                 type="button"

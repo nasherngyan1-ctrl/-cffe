@@ -55,6 +55,7 @@ export const SettingsView: React.FC<Props> = ({
   const [backups, setBackups] = useState<BackupFile[]>([]);
   const [lanInfo, setLanInfo] = useState<LanInfo | null>(null);
   const [notice, setNotice] = useState('');
+  const [resettingDemo, setResettingDemo] = useState(false);
 
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -117,6 +118,21 @@ export const SettingsView: React.FC<Props> = ({
       loadExtras();
     } catch (err) {
       setErrorMsg((err as Error).message);
+    }
+  };
+
+  const handleResetDemoData = async () => {
+    if (!window.confirm(t.resetDemoConfirm)) return;
+    setResettingDemo(true);
+    setErrorMsg('');
+    try {
+      await apiRequest('/api/settings/reset-demo', { method: 'POST' });
+      alert(t.demoResetSuccess);
+      window.location.reload();
+    } catch (err) {
+      setErrorMsg((err as Error).message);
+    } finally {
+      setResettingDemo(false);
     }
   };
 
@@ -333,6 +349,19 @@ export const SettingsView: React.FC<Props> = ({
                 Automatic local backups run every 6 hours, or click "{t.createBackup}" now.
               </p>
             )}
+          </div>
+
+          <div className="pt-3 border-t border-[#384E43] flex items-center justify-between">
+            <span className="text-xs text-[#D6C7A3]">{t.resetDemoData}</span>
+            <button
+              type="button"
+              disabled={resettingDemo}
+              onClick={handleResetDemoData}
+              className="flex items-center gap-1.5 rounded-lg border border-amber-400/40 bg-amber-950/40 px-3 py-1.5 text-xs font-semibold text-amber-200 hover:bg-amber-900/40 cursor-pointer"
+            >
+              <RotateCcw className={`w-3.5 h-3.5 ${resettingDemo ? 'animate-spin' : ''}`} />
+              <span>{t.resetDemoData}</span>
+            </button>
           </div>
         </div>
 

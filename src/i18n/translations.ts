@@ -321,6 +321,10 @@ export const translations = {
     activateAccount: 'چالاککردن',
     deactivateAccount: 'ناچالاککردن',
     forcedResetNotice: 'گۆڕینی وشەی نهێنی چاوەڕوانکراوە',
+    demoModeBadge: 'دۆخی پێشانگا (DEMO)',
+    resetDemoData: 'گەڕانەوەی زانیاری پێشانگا',
+    resetDemoConfirm: 'ئایا دڵنیایت لە ڕیسێتکردن و گەڕاندنەوەی سەرجەم زانیارییە پێشوەختەکانی پێشانگا؟',
+    demoResetSuccess: 'زانیارییەکان بە سەرکەوتوویی ڕیسێت کران!',
   },
   ar: {
     brandName: 'BASLUNE POS',
@@ -577,6 +581,10 @@ export const translations = {
     activateAccount: 'تفعيل',
     deactivateAccount: 'تعطيل',
     forcedResetNotice: 'بانتظار تغيير كلمة المرور',
+    demoModeBadge: 'وضع العرض التجريبي',
+    resetDemoData: 'إعادة ضبط البيانات التجريبية',
+    resetDemoConfirm: 'هل أنت متأكد من إعادة ضبط واستعادة بيانات العرض التجريبي الافتراضية؟',
+    demoResetSuccess: 'تمت إعادة ضبط البيانات بنجاح!',
   },
   en: {
     brandName: 'BASLUNE POS',
@@ -843,6 +851,10 @@ export const translations = {
     activateAccount: 'Activate',
     deactivateAccount: 'Deactivate',
     forcedResetNotice: 'Password reset pending',
+    demoModeBadge: 'DEMO MODE',
+    resetDemoData: 'Reset Demo Data',
+    resetDemoConfirm: 'Are you sure you want to reset and restore all default demo data?',
+    demoResetSuccess: 'Demo data successfully reset!',
   },
 } as const;
 
