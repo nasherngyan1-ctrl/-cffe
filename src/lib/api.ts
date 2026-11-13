@@ -6,6 +6,7 @@ import {
 } from './offlineDb';
 import { getOrCreateDeviceId } from './wsClient';
 import type { Order } from '../types/pos';
+import { handleLocalStorageApi } from './localStorageStore';
 
 const TOKEN_STORAGE_KEY = 'baslune_auth_token';
 
@@ -19,35 +20,16 @@ export function setStoredToken(token: string | null) {
 }
 
 export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = getStoredToken();
-  const headers = new Headers(options.headers || {});
-  if (!(options.body instanceof FormData) && !headers.has('Content-Type')) {
-    headers.set('Content-Type', 'application/json');
+  // Directly execute via client-side localStorage store for 100% static Vercel deployment
+  try {
+    const data = await handleLocalStorageApi(path, options);
+    return data as T;
+  } catch (err) {
+    const errorMsg = (err as Error).message || 'Request failed';
+    const errorObj = new Error(errorMsg) as Error & { status?: number };
+    errorObj.status = 500;
+    throw errorObj;
   }
-  if (token && !headers.has('Authorization')) {
-    headers.set('Authorization', `Bearer ${token}`);
-  }
-
-  const res = await fetch(path, {
-    ...options,
-    headers,
-    credentials: 'include',
-  });
-
-  if (!res.ok) {
-    let message = `Request failed (${res.status})`;
-    try {
-      const data = (await res.json()) as { error?: string };
-      if (data.error) message = data.error;
-    } catch {
-      // ignore json parse error
-    }
-    const err = new Error(message) as Error & { status?: number };
-    err.status = res.status;
-    throw err;
-  }
-
-  return res.json() as Promise<T>;
 }
 
 export async function submitOrderWithOfflineSupport(
@@ -79,7 +61,6 @@ export async function submitOrderWithOfflineSupport(
     return { queued: false, order: res.order, client_tx_id: clientTxId };
   } catch (err) {
     const status = (err as { status?: number }).status;
-    // Queue locally ONLY on network/server unavailability (not validation/auth 4xx errors)
     if (!status || status >= 500) {
       await enqueuePendingOrder({
         client_tx_id: clientTxId,
