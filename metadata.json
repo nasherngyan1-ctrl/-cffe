@@ -1,0 +1,6 @@
+{
+  "name": "BASLUNE POS",
+  "description": "Self-hosted local POS and specialty coffee shop management system for BASLUNE Specialty Coffee.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

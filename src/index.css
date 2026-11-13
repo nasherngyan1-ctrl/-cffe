@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --bg-main: #101A17;
+    --bg-sidebar: #1B2A24;
+    --bg-card: #293B32;
+    --accent-sage: #A7B89A;
+    --accent-sand: #D6C7A3;
+    --text-main: #F3EFE6;
+  }
+
+  html,
+  body {
+    background-color: #101A17;
+    color: #F3EFE6;
+    font-family: "Plus Jakarta Sans", "Segoe UI", "Tahoma", "Noto Sans Arabic", "Vazirmatn", system-ui, sans-serif;
+  }
+
+  [dir="rtl"] body,
+  [dir="rtl"] {
+    font-family: "Noto Sans Arabic", "Vazirmatn", "Segoe UI", "Tahoma", "Plus Jakarta Sans", system-ui, sans-serif;
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Custom sleek scrollbar for dark forest theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #101A17;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #293B32;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #A7B89A;
+}
+
+/* Thermal 80mm receipt & A4 report print rules */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .thermal-receipt {
+    width: 76mm !important;
+    margin: 0 auto !important;
+    padding: 4mm !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+  }
+}
